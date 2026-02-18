@@ -399,6 +399,7 @@ class plagiarism_copyleaks_submissions {
                 'cm' => $coursemoduleid,
                 'userid' => $moodleuserid,
                 'identifier' => $identifier,
+                'statuscode' => 'pending' // RDL: Prevent "found more than one record!"
             ]
         );
 
