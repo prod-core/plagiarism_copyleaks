@@ -156,7 +156,14 @@ class plagiarism_copyleaks_eventshandler {
         }
 
         // Queue files to be submitted to Copyleaks later by submission task.
-        if (!empty($data['other']['pathnamehashes'])) {
+        if (
+            !empty($data['other']['pathnamehashes']) &&
+            !(
+                $this->modulename === 'assign' &&
+                $this->eventtype === 'file_uploaded' &&
+                !$this->is_instructor_submit($data)
+            )
+        ) {
             $result = $this->queue_files($data, $coursemodule, $authoruserid, $submitteruserid, $cmdata);
         }
 
@@ -307,10 +314,11 @@ class plagiarism_copyleaks_eventshandler {
             if ($qa->get_question()->get_type_name() != 'essay') {
                 continue;
             }
+
             $data['other']['content'] = $qa->get_response_summary();
 
-            // Queue text to Copyleaks.
-            $identifier = sha1($data['other']['content']);
+            // Queue text to Copyleaks
+            $identifier = sha1('quiz_attempt user' . $attempt->get_userid() . ' cm' . $coursemodule->id . ' slot' . $slot . ' attempt' . $attempt->get_attempt_number());
             $result = $this->queue_submission_to_copyleaks(
                 $coursemodule,
                 $authoruserid,
@@ -320,6 +328,7 @@ class plagiarism_copyleaks_eventshandler {
                 $data['objectid'],
                 $cmdata
             );
+
 
             // Queue files to Copyleaks.
             $context = context_module::instance($coursemodule->id);
@@ -469,14 +478,16 @@ class plagiarism_copyleaks_eventshandler {
         }
         // Check if submission already exists.
         $typefield = ($CFG->dbtype == "oci") ? " to_char(submissiontype) " : " submissiontype ";
-        if ($DB->get_records_select(
-            'plagiarism_copyleaks_files',
-            " cm = ? AND itemid = ? AND " . $typefield . " = ? AND identifier = ? AND hashedcontent = ?",
-            [$coursemodule->id, $itemid, $subtype, $identifier, $hashedcontent],
-            'id',
-            'id'
-        )) {
-            // Submission already exists, do not queue it again.
+        $params = [$coursemodule->id, $itemid, $subtype, $identifier];
+        $sql = "cm = ? AND itemid = ? AND {$typefield} = ? AND identifier = ?";
+        if ($hashedcontent === null) {
+            $sql .= " AND hashedcontent IS NULL";
+        } else {
+            $sql .= " AND hashedcontent = ?";
+            $params[] = $hashedcontent;
+        }
+
+        if ($DB->record_exists_select('plagiarism_copyleaks_files', $sql, $params)) {
             return true;
         } else {
             $submissionid = plagiarism_copyleaks_submissions::create(

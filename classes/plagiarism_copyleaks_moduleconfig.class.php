@@ -172,30 +172,52 @@ class plagiarism_copyleaks_moduleconfig {
     /**
      * Is course module request queued.
      * @param string $cmid check if the cmid is in the requests queue
+     * @param string $endpointSuffix The suffix (or identifier).
      * @return bool
      */
-    public static function is_course_module_request_queued($cmid) {
+    public static function is_course_module_request_queued($cmid, $endpointSuffix) {
         global $DB;
-        $record = $DB->get_record('plagiarism_copyleaks_request', ['cmid' => $cmid]);
-        return isset($record) && $record;
+
+        $select = 'cmid = :cmid AND ' . $DB->sql_like('endpoint', ':endpoint', false);
+
+        $params = [
+            'cmid' => $cmid,
+            'endpoint' => '%' . $endpointSuffix . '%',
+        ];
+
+        return $DB->record_exists_select('plagiarism_copyleaks_request', $select, $params);
     }
 
     /**
      * Checks if a course module request is queued and has remaining retry attempts.
      *
      * @param int $cmid The course module ID.
+     * @param string $endpointSuffix The suffix (or identifier).
      * @return bool True if the request is queued and retryable (retry attempts < PLAGIARISM_COPYLEAKS_MAX_RETRY).
      */
-    public static function is_course_module_request_queued_and_retryable($cmid) {
+    public static function is_course_module_request_queued_and_retryable($cmid, $endpointSuffix) {
         global $DB;
 
-        $record = $DB->get_record('plagiarism_copyleaks_request', ['cmid' => $cmid], '*');
+        $select = 'cmid = :cmid AND ' . $DB->sql_like('endpoint', ':endpoint', false);
 
-        if ($record && isset($record->total_retry_attempts)) {
-            return $record->total_retry_attempts < PLAGIARISM_COPYLEAKS_MAX_RETRY;
+        $params = [
+            'cmid' => $cmid,
+            'endpoint' => '%' . $endpointSuffix . '%',
+        ];
+
+        $retryattempts = $DB->get_field_select(
+            'plagiarism_copyleaks_request',
+            'total_retry_attempts',
+            $select,
+            $params,
+            IGNORE_MISSING
+        );
+
+        if ($retryattempts === false || $retryattempts === null) {
+            return false;
         }
 
-        return false;
+        return ((int)$retryattempts) < PLAGIARISM_COPYLEAKS_MAX_RETRY;
     }
 
     /**

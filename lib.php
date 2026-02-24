@@ -151,8 +151,21 @@ class plagiarism_plugin_copyleaks extends plagiarism_plugin {
             // For queued requests,use the stored request data to retrieve the tempCourseModuleId.
             // Then delete the request record.
             // This allows the "Edit Scan Settings" button to be re-enabled for the course module.
-            if (\plagiarism_copyleaks_moduleconfig::is_course_module_request_queued($data->coursemodule)) {
-                $record = $DB->get_record('plagiarism_copyleaks_request', ['cmid' => $data->coursemodule], 'data');
+            if (\plagiarism_copyleaks_moduleconfig::is_course_module_request_queued($data->coursemodule, 'upsert-module')) {
+                $select = 'cmid = :cmid AND ' . $DB->sql_like('endpoint', ':endpoint', false);
+
+                $params = [
+                    'cmid' => $data->coursemodule,
+                    'endpoint' => '%upsert-module%',
+                ];
+
+                $record = $DB->get_record_select(
+                    'plagiarism_copyleaks_request',
+                    $select,
+                    $params,
+                    'id, data',
+                    IGNORE_MISSING
+                );
                 // Check if the record exists, then decode the data and get the tempCourseModuleId.
                 if ($record) {
                     if (!empty($record->data)) {
@@ -164,7 +177,7 @@ class plagiarism_plugin_copyleaks extends plagiarism_plugin {
                     }
 
                     // Delete the request record.
-                    if (!$DB->delete_records('plagiarism_copyleaks_request', ['cmid' => $data->coursemodule])) {
+                    if (!$DB->delete_records('plagiarism_copyleaks_request', ['id' => $record->id])) {
                         \plagiarism_copyleaks_logs::add(
                             "Failed to delete plagiarism_copyleaks_request with cmid: $data->coursemodule after successful upsert.",
                             "DELETE_RECORD_FAILED"

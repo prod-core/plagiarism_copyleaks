@@ -88,7 +88,7 @@ class plagiarism_copyleaks_cm_duplicate extends \core\task\scheduled_task {
             // Add course modules to the request.
             $coursemodules = [];
             foreach ($cmstocopy as $cmduplicationdata) {
-                if (\plagiarism_copyleaks_moduleconfig::is_course_module_request_queued($cmduplicationdata->original_cm_id)) {
+                if (\plagiarism_copyleaks_moduleconfig::is_course_module_request_queued($cmduplicationdata->original_cm_id, 'upsert-module')) {
                     continue;
                 }
 

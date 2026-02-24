@@ -139,7 +139,7 @@ class plagiarism_copyleaks_utils {
         global $CFG;
         $isbtndisabled = false;
         if (!$isadminform && isset($cmid)) {
-            if (plagiarism_copyleaks_moduleconfig::is_course_module_request_queued($cmid)) {
+            if (plagiarism_copyleaks_moduleconfig::is_course_module_request_queued($cmid, 'upsert-module')) {
                 $isbtndisabled = true;
             }
         }

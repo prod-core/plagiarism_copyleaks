@@ -139,7 +139,8 @@ class plagiarism_copyleaks_files extends external_api {
                 $quizattempt = \quiz_attempt::create($submission->itemid);
                 foreach ($quizattempt->get_slots() as $slot) {
                     $questionattempt = $quizattempt->get_question_attempt($slot);
-                    if ($submission->identifier == sha1($questionattempt->get_response_summary())) {
+                    $identifier = sha1('quiz_attempt user' . $quizattempt->get_userid() . ' cm' . $coursemodule->id . ' slot' . $slot . ' attempt' . $quizattempt->get_attempt_number());
+                    if ($submission->identifier == $identifier || $submission->identifier == sha1($questionattempt->get_response_summary())) {
                         $submittedtextcontent = $questionattempt->get_response_summary();
                         break;
                     }
