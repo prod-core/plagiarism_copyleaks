@@ -439,7 +439,7 @@ class plagiarism_copyleaks_dbutils {
 
         if (
             $newapiurl !== $oldapiurl ||
-            $newkey    !== $oldkey ||
+            $newkey !== $oldkey ||
             $newsecret !== $oldsecret
         ) {
             self::upsert_config_api_connection_status(false);

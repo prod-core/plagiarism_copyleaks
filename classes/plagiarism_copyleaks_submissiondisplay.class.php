@@ -160,7 +160,12 @@ class plagiarism_copyleaks_submissiondisplay {
                     }
                     $attempt = $quizattemptclass::create_from_usage_id($submissionref['area']);
 
-                    $subidentifier = sha1('quiz_attempt user' . $attempt->get_userid() . ' cm' . $coursemodule->id . ' slot' . $submissionref["itemid"] . ' attempt' . $attempt->get_attempt_number());
+                    $subidentifier = sha1(
+                        'quiz_attempt user' . $attempt->get_userid() .
+                        ' cm' . $coursemodule->id .
+                        ' slot' . $submissionref["itemid"] .
+                        ' attempt' . $attempt->get_attempt_number()
+                    );
                     $oldsubidentifier = sha1($submissionref["content"]);
                 } else {
 

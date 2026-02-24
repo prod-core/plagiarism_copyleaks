@@ -300,7 +300,7 @@ class plagiarism_copyleaks_eventshandler {
         $result = true;
 
         if (class_exists('\\mod_quiz\\quiz_attempt')) {
-            // Moodle 4.4+/5.x
+            // Moodle 4.4+/5.x.
             $attempt = \mod_quiz\quiz_attempt::create($data['objectid']);
         } else {
             // Older Moodle – versions prior to 4.4.
@@ -317,8 +317,13 @@ class plagiarism_copyleaks_eventshandler {
 
             $data['other']['content'] = $qa->get_response_summary();
 
-            // Queue text to Copyleaks
-            $identifier = sha1('quiz_attempt user' . $attempt->get_userid() . ' cm' . $coursemodule->id . ' slot' . $slot . ' attempt' . $attempt->get_attempt_number());
+            // Queue text to Copyleaks.
+            $identifier = sha1(
+                'quiz_attempt user' . $attempt->get_userid() .
+                ' cm' . $coursemodule->id .
+                ' slot' . $slot .
+                ' attempt' . $attempt->get_attempt_number()
+            );
             $result = $this->queue_submission_to_copyleaks(
                 $coursemodule,
                 $authoruserid,
@@ -328,7 +333,6 @@ class plagiarism_copyleaks_eventshandler {
                 $data['objectid'],
                 $cmdata
             );
-
 
             // Queue files to Copyleaks.
             $context = context_module::instance($coursemodule->id);

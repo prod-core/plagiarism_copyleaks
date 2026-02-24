@@ -172,17 +172,17 @@ class plagiarism_copyleaks_moduleconfig {
     /**
      * Is course module request queued.
      * @param string $cmid check if the cmid is in the requests queue
-     * @param string $endpointSuffix The suffix (or identifier).
+     * @param string $endpointsuffix The suffix (or identifier).
      * @return bool
      */
-    public static function is_course_module_request_queued($cmid, $endpointSuffix) {
+    public static function is_course_module_request_queued($cmid, $endpointsuffix) {
         global $DB;
 
         $select = 'cmid = :cmid AND ' . $DB->sql_like('endpoint', ':endpoint', false);
 
         $params = [
             'cmid' => $cmid,
-            'endpoint' => '%' . $endpointSuffix . '%',
+            'endpoint' => '%' . $endpointsuffix . '%',
         ];
 
         return $DB->record_exists_select('plagiarism_copyleaks_request', $select, $params);
@@ -192,17 +192,17 @@ class plagiarism_copyleaks_moduleconfig {
      * Checks if a course module request is queued and has remaining retry attempts.
      *
      * @param int $cmid The course module ID.
-     * @param string $endpointSuffix The suffix (or identifier).
+     * @param string $endpointsuffix The suffix (or identifier).
      * @return bool True if the request is queued and retryable (retry attempts < PLAGIARISM_COPYLEAKS_MAX_RETRY).
      */
-    public static function is_course_module_request_queued_and_retryable($cmid, $endpointSuffix) {
+    public static function is_course_module_request_queued_and_retryable($cmid, $endpointsuffix) {
         global $DB;
 
         $select = 'cmid = :cmid AND ' . $DB->sql_like('endpoint', ':endpoint', false);
 
         $params = [
             'cmid' => $cmid,
-            'endpoint' => '%' . $endpointSuffix . '%',
+            'endpoint' => '%' . $endpointsuffix . '%',
         ];
 
         $retryattempts = $DB->get_field_select(

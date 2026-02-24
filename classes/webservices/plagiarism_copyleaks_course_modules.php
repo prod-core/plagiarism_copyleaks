@@ -33,78 +33,75 @@ require_once($CFG->dirroot . '/plagiarism/copyleaks/classes/exceptions/plagiaris
  */
 class plagiarism_copyleaks_course_modules extends external_api {
 
-  /**
-   * Parameters for get_student_report_access_by_cmids
-   * @return external_function_parameters
-   */
-  public static function get_student_report_access_by_cmids_parameters() {
-
-    return new external_function_parameters(
-      [
-        'cmids' => new external_multiple_structure(
-          new external_single_structure(
+    /**
+     * Parameters for get_student_report_access_by_cmids
+     * @return external_function_parameters
+     */
+    public static function get_student_report_access_by_cmids_parameters() {
+        return new external_function_parameters(
             [
-              'id' => new external_value(PARAM_INT, 'The ID of the course module'),
+                'cmids' => new external_multiple_structure(
+                    new external_single_structure(
+                        [
+                            'id' => new external_value(PARAM_INT, 'The ID of the course module'),
+                        ]
+                    )
+                ),
             ]
-          )
-        ),
-      ]
-    );
-  }
-
-
-  /**
-   * Get student plagiarism report access flags by course module IDs
-   * @param array $cmids
-   * @return array
-   */
-public static function get_student_report_access_by_cmids($cmids) {
-    global $DB;
-
-    // Validate parameters.
-    $params = self::validate_parameters(self::get_student_report_access_by_cmids_parameters(), ['cmids' => $cmids]);
-
-    $reportsaccesspermission = [];
-
-    foreach ($params['cmids'] as $cm) {
-        $cmid = $cm['id'];
-
-        $settings = $DB->get_records_menu(
-            'plagiarism_copyleaks_config',
-            ['cm' => $cmid],
-            '',
-            'name,value'
         );
+    }
 
-        $allowaccess =
-            isset($settings['plagiarism_copyleaks_allowstudentaccess']) &&
-            $settings['plagiarism_copyleaks_allowstudentaccess'] === '1';
+    /**
+     * Get student plagiarism report access flags by course module IDs
+     * @param array $cmids
+     * @return array
+     */
+    public static function get_student_report_access_by_cmids($cmids) {
+        global $DB;
 
-      $reportsaccesspermission[] = [
-            'courseModuleId' => $cmid,
-            'allowStudentReportAccess' => $allowaccess
+        // Validate parameters.
+        $params = self::validate_parameters(self::get_student_report_access_by_cmids_parameters(), ['cmids' => $cmids]);
+
+        $reportsaccesspermission = [];
+
+        foreach ($params['cmids'] as $cm) {
+            $cmid = $cm['id'];
+
+            $settings = $DB->get_records_menu(
+                'plagiarism_copyleaks_config',
+                ['cm' => $cmid],
+                '',
+                'name,value'
+            );
+
+            $allowaccess =
+                isset($settings['plagiarism_copyleaks_allowstudentaccess']) &&
+                $settings['plagiarism_copyleaks_allowstudentaccess'] === '1';
+
+            $reportsaccesspermission[] = [
+                'courseModuleId' => $cmid,
+                'allowStudentReportAccess' => $allowaccess,
+            ];
+        }
+
+        return [
+            'reportsAccessPermission' => $reportsaccesspermission,
         ];
     }
 
-    return [
-      'reportsAccessPermission' => $reportsaccesspermission
-    ];
-}
-
-
-  /**
-   * Describes the return value for get_student_report_access_by_cmids
-   * @return external_single_structure
-   */
-  public static function get_student_report_access_by_cmids_returns() {
-    return new external_single_structure([
-      'reportsAccessPermission' => new external_multiple_structure(
-        new external_single_structure([
-          'courseModuleId' => new external_value(PARAM_INT, 'Course Module ID'),
-          'allowStudentReportAccess' => new external_value(PARAM_BOOL, 'True if student access is allowed'),
-        ]),
-        'Access settings for each course module'
-      ),
-    ]);
-  }
+    /**
+     * Describes the return value for get_student_report_access_by_cmids
+     * @return external_single_structure
+     */
+    public static function get_student_report_access_by_cmids_returns() {
+        return new external_single_structure([
+            'reportsAccessPermission' => new external_multiple_structure(
+                new external_single_structure([
+                    'courseModuleId' => new external_value(PARAM_INT, 'Course Module ID'),
+                    'allowStudentReportAccess' => new external_value(PARAM_BOOL, 'True if student access is allowed'),
+                ]),
+                'Access settings for each course module'
+            ),
+        ]);
+    }
 }
