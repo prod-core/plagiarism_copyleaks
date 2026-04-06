@@ -153,12 +153,15 @@ class plagiarism_copyleaks_submissiondisplay {
 
                 if ($submissiontype === 'quiz_answer') {
 
-                    if (class_exists('\mod_quiz\quiz_attempt')) {
-                        $quizattemptclass = '\mod_quiz\quiz_attempt';
+                    if (class_exists('\\mod_quiz\\quiz_attempt')) {
+                        // Moodle 4.4+/5.x.
+                        $attempt = \mod_quiz\quiz_attempt::create_from_usage_id($submissionref['area']);
                     } else {
-                        $quizattemptclass = 'quiz_attempt';
+                        // Older Moodle – versions prior to 4.4.
+                        global $CFG;
+                        require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
+                        $attempt = quiz_attempt::create_from_usage_id($submissionref['area']);
                     }
-                    $attempt = $quizattemptclass::create_from_usage_id($submissionref['area']);
 
                     $subidentifier = sha1(
                         'quiz_attempt user' . $attempt->get_userid() .
@@ -265,7 +268,7 @@ class plagiarism_copyleaks_submissiondisplay {
                         'plagiarism_copyleaks_files',
                         $query,
                         $queryparams,
-                        '',
+                        'id DESC',
                         '*',
                         0,
                         1

@@ -393,14 +393,19 @@ class plagiarism_copyleaks_submissions {
         $errorcode
     ) {
         global $DB;
-        $submission = $DB->get_record(
+        $submissions = $DB->get_records(
             'plagiarism_copyleaks_files',
             [
                 'cm' => $coursemoduleid,
                 'userid' => $moodleuserid,
                 'identifier' => $identifier,
-            ]
+            ],
+            'id DESC',
+            '*',
+            0,
+            1
         );
+        $submission = reset($submissions);
 
         if (isset($submission) && $submission) {
             $submission->externalid = $scanid;
