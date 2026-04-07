@@ -400,12 +400,18 @@ class plagiarism_copyleaks_submissions {
                 'userid' => $moodleuserid,
                 'identifier' => $identifier,
             ],
-            'id DESC',
-            '*',
-            0,
-            1
+            'id DESC'
         );
         $submission = reset($submissions);
+
+        // Handle Duplicates.
+        if ($submission && count($submissions) > 1) {
+            $DB->delete_records_select(
+                'plagiarism_copyleaks_files',
+                'cm = ? AND userid = ? AND identifier = ? AND id != ?',
+                [$coursemoduleid, $moodleuserid, $identifier, $submission->id]
+            );
+        }
 
         if (isset($submission) && $submission) {
             $submission->externalid = $scanid;
