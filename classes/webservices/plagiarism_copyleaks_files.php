@@ -141,7 +141,7 @@ class plagiarism_copyleaks_files extends external_api {
                 } else {
                     // Older Moodle – versions prior to 4.4.
                     require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
-                    $quizattempt = quiz_attempt::create($submission->itemid);
+                    $quizattempt = \quiz_attempt::create($submission->itemid);
                 }
                 foreach ($quizattempt->get_slots() as $slot) {
                     $questionattempt = $quizattempt->get_question_attempt($slot);
