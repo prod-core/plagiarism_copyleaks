@@ -205,8 +205,14 @@ class plagiarism_copyleaks_sendsubmissions extends \core\task\scheduled_task {
                         }
                     } else if ($submission->submissiontype == 'quiz_answer') {
                         try {
-                            require_once($CFG->dirroot . '/mod/quiz/locallib.php');
-                            $quizattempt = \quiz_attempt::create($submission->itemid);
+                            if (class_exists('\\mod_quiz\\quiz_attempt')) {
+                                // Moodle 4.4+/5.x.
+                                $quizattempt = \mod_quiz\quiz_attempt::create($submission->itemid);
+                            } else {
+                                // Older Moodle – versions prior to 4.4.
+                                require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
+                                $quizattempt = quiz_attempt::create($submission->itemid);
+                            }
                             foreach ($quizattempt->get_slots() as $slot) {
                                 $questionattempt = $quizattempt->get_question_attempt($slot);
                                 $identifier = sha1(
